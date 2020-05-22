@@ -32,7 +32,7 @@ class JsonRedisPacketChannel<P>(
         it.async().subscribe(fullyQualifiedChannelName)
     }
 
-    override fun sendPacket(packet: P?): Boolean {
+    override fun sendPacket(serverGuid: UUID?, packet: P?): Boolean {
         if (!permitNulls && packet == null) throw IllegalArgumentException("does not permit nulls but attempted null packet")
 
         val handledPacket = handler.packetPreSend(packet)
@@ -42,7 +42,7 @@ class JsonRedisPacketChannel<P>(
         else simpleGson.toJson(handledPacket)
 
         plugin.mvUtil.redis.connect().use {
-            it.sync().publish(fullyQualifiedChannelName, jsonMessage)
+            it.sync().publish("mvredischannels_${serverGuid ?: PROXY_REDIS_NAME}_$channel", jsonMessage)
         }
         return true
     }

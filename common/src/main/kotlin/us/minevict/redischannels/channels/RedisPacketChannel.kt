@@ -1,5 +1,7 @@
 package us.minevict.redischannels.channels
 
+import java.util.*
+
 /**
  * A redis messaging channel which uses a specific packet type.
  *
@@ -30,10 +32,11 @@ interface RedisPacketChannel<P> {
     /**
      * Send a packet through the channel.
      *
+     * @param server Send the packet to this server.
      * @param packet The packet to send or null if [permitNulls] is true.
      * @return Whether the packet was successfully sent.
      */
-    fun sendPacket(packet: P?): Boolean
+    fun sendPacket(server: UUID?, packet: P?): Boolean
 
     /**
      * Unregister all that has to do with this channel from Redis.
