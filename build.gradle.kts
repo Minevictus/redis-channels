@@ -1,4 +1,5 @@
 import com.github.jengelman.gradle.plugins.shadow.ShadowPlugin
+import nl.javadude.gradle.plugins.license.LicensePlugin
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.*
 
@@ -7,6 +8,7 @@ plugins {
     `maven-publish`
     id("com.github.johnrengelman.shadow") version "5.2.0"
     kotlin("jvm") version "1.3.71"
+    id("com.github.hierynomus.license") version "0.15.0"
 }
 
 ext["mvutilVer"] = "5.1.0"
@@ -40,6 +42,7 @@ subprojects {
         plugin<ShadowPlugin>()
         plugin<MavenPublishPlugin>()
         plugin("org.jetbrains.kotlin.jvm")
+        plugin<LicensePlugin>()
     }
 
     repositories {
@@ -166,6 +169,13 @@ subprojects {
                 }
             }
         }
+    }
+
+    license {
+        header = rootProject.file("LICENCE-HEADER")
+        ext["year"] = Calendar.getInstance().get(Calendar.YEAR)
+        ext["name"] = "Mariell Hoversholm"
+        include("**/*.kt")
     }
 }
 

@@ -1,0 +1,28 @@
+= redis-channels
+
+Communicate between plugins across servers using Redis.
+
+== Build
+
+Requirements:
+
+. Java 11-14 JDK
+
+Method:
+
+. `./gradlew shadowJar`
+. Find the jars in `{platform}/build/libs`.
+
+== Usage
+
+This depends on MV-Util.
+
+Put the jar in the respective platform's `plugins` directory.
+
+== Maven repository
+
+You can find the package under
+`us.minevict.redischannels:<spigot|bungee|common` on the maven repository:
+`https://nexus.proximyst.com/repository/maven-any/`.
+
+Find out how to drag this in yourself.
