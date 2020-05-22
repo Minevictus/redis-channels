@@ -10,7 +10,7 @@ plugins {
 dependencies {
     compileOnly("io.github.waterfallmc:waterfall-api:1.15-SNAPSHOT")
     compileOnly("us.minevict.mvutil:bungee:${rootProject.ext["mvutilVer"]}")
-    implementation(project(":common"))
+    api(project(":common"))
 }
 
 tasks.withType<ShadowJar> {

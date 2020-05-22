@@ -10,7 +10,7 @@ plugins {
 dependencies {
     compileOnly("com.destroystokyo.paper:paper-api:1.15.2-R0.1-SNAPSHOT")
     compileOnly("us.minevict.mvutil:spigot:${rootProject.ext["mvutilVer"]}")
-    implementation(project(":common"))
+    api(project(":common"))
 }
 
 tasks.withType<ShadowJar> {
