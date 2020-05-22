@@ -59,6 +59,9 @@ class RedisChannels : MvPlugin() {
             .first { (_, v) -> v == serverName }
             .key
 
+    fun getServerName(serverGuid: UUID): String? = serverManager.guidToNameMap[serverGuid]
+    fun getServerName(serverHash: Int): String? = serverManager.hashToNameMap[serverHash]
+
     fun getPubSubChannelName(server: Server): String? = getPubSubChannelName(server.info.name)
     fun getPubSubChannelName(server: ServerInfo): String? = getPubSubChannelName(server.name)
     fun getPubSubChannelName(serverName: String): String? {
