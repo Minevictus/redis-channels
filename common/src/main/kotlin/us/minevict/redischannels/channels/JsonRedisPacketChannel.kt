@@ -41,7 +41,9 @@ class JsonRedisPacketChannel<P>(
         val jsonMessage = if (handledPacket == null) ""
         else simpleGson.toJson(handledPacket)
 
-        plugin.mvUtil.redis.connect().sync().publish(fullyQualifiedChannelName, jsonMessage)
+        plugin.mvUtil.redis.connect().use {
+            it.sync().publish(fullyQualifiedChannelName, jsonMessage)
+        }
         return true
     }
 
