@@ -4,6 +4,7 @@ import com.google.gson.JsonSyntaxException
 import us.minevict.mvutil.common.IMvPlugin
 import us.minevict.mvutil.common.ext.simpleGson
 import us.minevict.mvutil.common.redis.DefaultRedisPubSubListener
+import us.minevict.redischannels.PROXY_REDIS_NAME
 import us.minevict.redischannels.RedisMessagePacketHandler
 import java.util.*
 
@@ -14,13 +15,18 @@ import java.util.*
  */
 class JsonRedisPacketChannel<P>(
     private val plugin: IMvPlugin<*, *, *>,
-    serverGuid: UUID,
+    /**
+     * The GUID of the server for this channel.
+     *
+     * If this is `null`, it is the proxy name.
+     */
+    serverGuid: UUID?,
     override val channel: String,
     override val packetType: Class<out P>,
     private val handler: RedisMessagePacketHandler<P> = RedisMessagePacketHandler.identity(),
     override val permitNulls: Boolean = false
 ) : RedisPacketChannel<P>, DefaultRedisPubSubListener<String, String> {
-    private val fullyQualifiedChannelName = "mvredischannels_${serverGuid}_$channel"
+    private val fullyQualifiedChannelName = "mvredischannels_${serverGuid ?: PROXY_REDIS_NAME}_$channel"
     private val redisPubSub = plugin.mvUtil.redis.connectPubSub().also {
         it.addListener(this)
         it.async().subscribe(fullyQualifiedChannelName)
