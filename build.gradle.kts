@@ -1,4 +1,5 @@
 import com.github.jengelman.gradle.plugins.shadow.ShadowPlugin
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import nl.javadude.gradle.plugins.license.LicensePlugin
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.*
@@ -143,6 +144,11 @@ subprojects {
     configure<JavaPluginConvention> {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = sourceCompatibility
+    }
+
+    tasks.withType<ShadowJar> {
+        archiveBaseName.set("${rootProject.name}-${project.name}")
+        destinationDirectory.set(rootProject.tasks.shadowJar.get().destinationDirectory.get())
     }
 
     val sourcesJar by tasks.registering(Jar::class) {
