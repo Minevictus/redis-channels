@@ -192,8 +192,8 @@ configure<JavaPluginConvention> {
 
 configure<com.github.breadmoirai.githubreleaseplugin.GithubReleaseExtension> {
     token { System.getenv("MVBOT_TOKEN") }
-    owner.set("Minevictus")
-    repo.set("MV-Util")
+    owner.set(System.getenv("DRONE_REPO_OWNER"))
+    repo.set(System.getenv("DRONE_REPO_NAME"))
     body(changelog())
     releaseAssets.from(rootProject.tasks.shadowJar.get().destinationDirectory.get().asFile.listFiles())
 }
