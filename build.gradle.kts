@@ -10,6 +10,7 @@ plugins {
     id("com.github.johnrengelman.shadow") version "5.2.0"
     kotlin("jvm") version "1.3.71"
     id("com.github.hierynomus.license") version "0.15.0"
+    id("com.github.breadmoirai.github-release") version "2.2.12"
 }
 
 ext["mvutilVer"] = "5.1.0"
@@ -168,10 +169,8 @@ subprojects {
                 name = "proxi-nexus"
                 url = uri("https://nexus.proximyst.com/repository/maven-any/")
                 credentials {
-                    val proxiUser: String? by rootProject
-                    val proxiPassword: String? by rootProject
-                    username = proxiUser
-                    password = proxiPassword
+                    username = System.getenv("NEXUS_USERNAME")
+                    password = System.getenv("NEXUS_PASSWORD")
                 }
             }
         }
@@ -189,4 +188,12 @@ subprojects {
 configure<JavaPluginConvention> {
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = sourceCompatibility
+}
+
+configure<com.github.breadmoirai.githubreleaseplugin.GithubReleaseExtension> {
+    token { System.getenv("MVBOT_TOKEN") }
+    owner.set("Minevictus")
+    repo.set("MV-Util")
+    body(changelog())
+    releaseAssets.from(rootProject.tasks.shadowJar.get().destinationDirectory.get().asFile.listFiles())
 }
