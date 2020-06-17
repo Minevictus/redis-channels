@@ -5,7 +5,7 @@ import us.minevict.mvutilgradleplugin.mvUtilVersion
 import java.util.*
 
 plugins {
-    id("us.minevict.mvutil") version "0.2.4"
+    id("us.minevict.mvutil") version "0.2.5"
     id("com.github.hierynomus.license") version "0.15.0"
 }
 
