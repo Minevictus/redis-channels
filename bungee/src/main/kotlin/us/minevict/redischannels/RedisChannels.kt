@@ -99,8 +99,8 @@ class RedisChannels : MvPlugin() {
     fun publishToServer(serverName: String, subchannel: String, content: String): Boolean {
         val pubsubName = getPubSubChannelName(serverName) ?: return false
         val payload = "$subchannel${0.toChar()}$content"
-        mvUtil.redis.connectPubSub().use {
-            it.sync().publish(pubsubName, payload)
+        mvUtil.redis.resource.use {
+            it.publish(pubsubName, payload)
         }
         return true
     }

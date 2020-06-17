@@ -18,12 +18,13 @@
 package us.minevict.redischannels.channels
 
 import com.google.gson.JsonSyntaxException
+import redis.clients.jedis.JedisPubSub
 import us.minevict.mvutil.common.IMvPlugin
 import us.minevict.mvutil.common.ext.simpleGson
-import us.minevict.mvutil.common.redis.DefaultRedisPubSubListener
 import us.minevict.redischannels.PROXY_REDIS_NAME
 import us.minevict.redischannels.RedisMessagePacketHandler
 import java.util.*
+import kotlin.concurrent.thread
 
 /**
  * A [RedisPacketChannel] which transmits its packets through serializing as JSON.
@@ -42,11 +43,12 @@ class JsonRedisPacketChannel<P>(
     override val packetType: Class<out P>,
     private val handler: RedisMessagePacketHandler<P> = RedisMessagePacketHandler.identity(),
     override val permitNulls: Boolean = false
-) : RedisPacketChannel<P>, DefaultRedisPubSubListener<String, String> {
+) : JedisPubSub(), RedisPacketChannel<P> {
     private val fullyQualifiedChannelName = "mvredischannels_${serverGuid ?: PROXY_REDIS_NAME}_$channel"
-    private val redisPubSub = plugin.mvUtil.redis.connectPubSub().also {
-        it.addListener(this)
-        it.async().subscribe(fullyQualifiedChannelName)
+    private val redisPubSub = plugin.mvUtil.redis.resource.also {
+        thread(start = true, isDaemon = true) {
+            it.subscribe(this, fullyQualifiedChannelName)
+        }
     }
 
     override fun sendPacket(serverGuid: UUID?, packet: P?): Boolean {
@@ -58,34 +60,43 @@ class JsonRedisPacketChannel<P>(
         val jsonMessage = if (handledPacket == null) ""
         else simpleGson.toJson(handledPacket)
 
-        plugin.mvUtil.redis.connect().use {
-            it.sync().publish("mvredischannels_${serverGuid ?: PROXY_REDIS_NAME}_$channel", jsonMessage)
+        plugin.mvUtil.redis.resource.use {
+            it.publish("mvredischannels_${serverGuid ?: PROXY_REDIS_NAME}_$channel", jsonMessage)
         }
         return true
     }
 
-    override fun message(channel: String, message: String) {
-        if (channel != this.fullyQualifiedChannelName) return // Incorrect channel found.
+    override fun onMessage(channel: String, message: String) {
+        runCatching {
+            println("Got message on $channel")
+            if (channel != this.fullyQualifiedChannelName) return // Incorrect channel found.
 
-        if (message.isEmpty()) {
-            // No data, null packet received!
-            if (!permitNulls) throw IllegalArgumentException("does not permit nulls but attempted null packet")
-            handler.packetReceived(null, channel)
-            return
+            if (message.isEmpty()) {
+                // No data, null packet received!
+                println("Got null packet!")
+                if (!permitNulls) throw IllegalArgumentException("does not permit nulls but attempted null packet")
+                handler.packetReceived(null, channel)
+                return
+            }
+
+            @Suppress("VARIABLE_WITH_REDUNDANT_INITIALIZER") // It's necessary due to the catch arm
+            var packet: P? = null
+            try {
+                packet = simpleGson.fromJson(message, packetType)
+            } catch (ex: JsonSyntaxException) {
+                plugin.platformLogger.warning("Received malformed packet on plugin messaging channel: $channel")
+                plugin.platformLogger.warning("Received packet: $packet")
+                ex.printStackTrace()
+                return
+            }
+            println("Got packet! $packet")
+
+            // Packet is not null by now.
+            handler.packetReceived(packet, channel)
         }
-
-        var packet: P? = null
-        try {
-            packet = simpleGson.fromJson(message, packetType)
-        } catch (ex: JsonSyntaxException) {
-            plugin.platformLogger.warning("Received malformed packet on plugin messaging channel: $channel")
-            plugin.platformLogger.warning("Received packet: $packet")
-            ex.printStackTrace()
-            return
-        }
-
-        // Packet is not null by now.
-        handler.packetReceived(packet, channel)
+            .onFailure {
+                Exception("error upon reading from redischannel $channel", it).printStackTrace()
+            }
     }
 
     override fun unregister() {
