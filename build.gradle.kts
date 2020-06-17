@@ -9,12 +9,11 @@ plugins {
     id("com.github.hierynomus.license") version "0.15.0"
 }
 
-mvUtilVersion = "6.0.0"
-ext["mvutilVer"] = "6.0.0"
+mvUtilVersion = "6.0.1"
 
 allprojects {
     group = "us.minevict.redischannels"
-    version = "0.2.0"
+    version = "0.2.1"
 }
 
 subprojects {
