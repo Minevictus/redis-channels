@@ -19,6 +19,10 @@ package us.minevict.redischannels
 
 import net.md_5.bungee.api.config.ServerInfo
 import net.md_5.bungee.api.connection.Server
+import net.md_5.bungee.api.event.PlayerDisconnectEvent
+import net.md_5.bungee.api.event.PostLoginEvent
+import net.md_5.bungee.api.plugin.Listener
+import net.md_5.bungee.event.EventHandler
 import us.minevict.mvutil.bungee.MvPlugin
 import us.minevict.mvutil.bungee.channel.JsonPacketChannel
 import us.minevict.mvutil.common.MvUtilVersion
@@ -27,7 +31,7 @@ import us.minevict.redischannels.channels.RedisPacketChannel
 import java.io.File
 import java.util.*
 
-class RedisChannels : MvPlugin() {
+class RedisChannels : MvPlugin(), Listener {
     private lateinit var serverManager: ServerManager
 
     private val redisChannels = mutableListOf<RedisPacketChannel<*>>()
@@ -49,6 +53,8 @@ class RedisChannels : MvPlugin() {
                 if (receiver is Server) serverManager.handleGuidPacket(packet ?: return@recv, receiver)
             }
         ))
+
+        listeners(this)
 
         return true
     }
@@ -103,6 +109,20 @@ class RedisChannels : MvPlugin() {
             it.publish(pubsubName, payload)
         }
         return true
+    }
+
+    @EventHandler
+    fun onPlayerJoin(event: PostLoginEvent) {
+        mvUtil.redis.resource.use {
+            it.sadd("network_players", event.player.uniqueId.toString())
+        }
+    }
+
+    @EventHandler
+    fun onPlayerQuit(event: PlayerDisconnectEvent) {
+        mvUtil.redis.resource.use {
+            it.srem("network_players", event.player.uniqueId.toString())
+        }
     }
 
     companion object {
