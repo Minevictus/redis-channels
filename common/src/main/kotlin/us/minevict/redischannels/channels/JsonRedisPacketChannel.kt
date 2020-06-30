@@ -19,10 +19,12 @@ package us.minevict.redischannels.channels
 
 import com.google.gson.JsonSyntaxException
 import redis.clients.jedis.JedisPubSub
+import redis.clients.jedis.exceptions.JedisConnectionException
 import us.minevict.mvutil.common.IMvPlugin
 import us.minevict.mvutil.common.ext.simpleGson
 import us.minevict.redischannels.PROXY_REDIS_NAME
 import us.minevict.redischannels.RedisMessagePacketHandler
+import java.net.SocketException
 import java.util.*
 import kotlin.concurrent.thread
 
@@ -47,7 +49,15 @@ class JsonRedisPacketChannel<P>(
     private val fullyQualifiedChannelName = "mvredischannels_${serverGuid ?: PROXY_REDIS_NAME}_$channel"
     private val redisPubSub = plugin.mvUtil.redis.resource.also {
         thread(start = true, isDaemon = true) {
-            it.subscribe(this, fullyQualifiedChannelName)
+            while (true) {
+                try {
+                    it.subscribe(this, fullyQualifiedChannelName)
+                } catch (ex: JedisConnectionException) {
+                    if (ex.cause !is SocketException) // Only re-throw if the connection died.
+                        throw ex
+                    break
+                }
+            }
         }
     }
 
