@@ -25,7 +25,7 @@ import us.minevict.mvutil.common.ext.simpleGson
 import us.minevict.redischannels.PROXY_REDIS_NAME
 import us.minevict.redischannels.RedisMessagePacketHandler
 import java.net.SocketException
-import java.util.*
+import java.util.UUID
 import kotlin.concurrent.thread
 
 /**
@@ -47,16 +47,18 @@ class JsonRedisPacketChannel<P>(
     override val permitNulls: Boolean = false
 ) : JedisPubSub(), RedisPacketChannel<P> {
     private val fullyQualifiedChannelName = "mvredischannels_${serverGuid ?: PROXY_REDIS_NAME}_$channel"
-    private val redisPubSub = plugin.mvUtil.redis.resource.also {
-        thread(start = true, isDaemon = true) {
-            while (true) {
-                try {
+    private val redisPubSubThread = thread(start = true, isDaemon = true) {
+        while (true) {
+            try {
+                plugin.mvUtil.redis.resource.use {
                     it.subscribe(this, fullyQualifiedChannelName)
-                } catch (ex: JedisConnectionException) {
-                    if (ex.cause !is SocketException) // Only re-throw if the connection died.
-                        throw ex
-                    break
                 }
+            } catch (ex: JedisConnectionException) {
+                if (ex.cause !is SocketException) // Only re-throw if the connection died
+                    throw ex
+                break
+            } catch (ignored: InterruptedException) {
+                break
             }
         }
     }
@@ -78,12 +80,10 @@ class JsonRedisPacketChannel<P>(
 
     override fun onMessage(channel: String, message: String) {
         runCatching {
-            println("Got message on $channel")
             if (channel != this.fullyQualifiedChannelName) return // Incorrect channel found.
 
             if (message.isEmpty()) {
                 // No data, null packet received!
-                println("Got null packet!")
                 if (!permitNulls) throw IllegalArgumentException("does not permit nulls but attempted null packet")
                 handler.packetReceived(null, channel)
                 return
@@ -99,7 +99,6 @@ class JsonRedisPacketChannel<P>(
                 ex.printStackTrace()
                 return
             }
-            println("Got packet! $packet")
 
             // Packet is not null by now.
             handler.packetReceived(packet, channel)
@@ -110,6 +109,6 @@ class JsonRedisPacketChannel<P>(
     }
 
     override fun unregister() {
-        redisPubSub.close()
+        redisPubSubThread.interrupt()
     }
 }

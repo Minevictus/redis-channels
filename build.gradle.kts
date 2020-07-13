@@ -2,7 +2,7 @@
 import nl.javadude.gradle.plugins.license.LicensePlugin
 import us.minevict.mvutilgradleplugin.MvUtilPlugin
 import us.minevict.mvutilgradleplugin.mvUtilVersion
-import java.util.*
+import java.util.Calendar
 
 plugins {
     id("us.minevict.mvutil") version "0.2.5"
@@ -13,7 +13,7 @@ mvUtilVersion = "6.0.1"
 
 allprojects {
     group = "us.minevict.redischannels"
-    version = "0.3.2"
+    version = "0.3.3"
 }
 
 subprojects {
