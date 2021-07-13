@@ -13,7 +13,7 @@ mvUtilVersion = "6.2.3"
 
 allprojects {
     group = "us.minevict.redischannels"
-    version = "0.3.3"
+    version = "0.3.4"
 }
 
 subprojects {
