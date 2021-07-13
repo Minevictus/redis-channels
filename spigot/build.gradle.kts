@@ -4,7 +4,7 @@ import us.minevict.mvutilgradleplugin.mvutil
 import us.minevict.mvutilgradleplugin.paperApi
 
 dependencies {
-    compileOnly(paperApi("1.15.2"))
+    compileOnly(paperApi("1.16.5"))
     compileOnly(mvutil("spigot"))
     api(project(":common"))
 }
