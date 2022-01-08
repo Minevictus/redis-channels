@@ -5,15 +5,15 @@ import us.minevict.mvutilgradleplugin.mvUtilVersion
 import java.util.Calendar
 
 plugins {
-    id("us.minevict.mvutil") version "0.2.7"
+    id("us.minevict.mvutil") version "0.4.5"
     id("com.github.hierynomus.license") version "0.15.0"
 }
 
-mvUtilVersion = "6.2.3"
+mvUtilVersion = "6.3.5"
 
 allprojects {
     group = "us.minevict.redischannels"
-    version = "0.3.4"
+    version = "0.4.0"
 }
 
 subprojects {

@@ -4,7 +4,7 @@ import us.minevict.mvutilgradleplugin.mvutil
 import us.minevict.mvutilgradleplugin.waterfallApi
 
 dependencies {
-    compileOnly(waterfallApi("1.16-R0.5"))
+    compileOnly("io.github.waterfallmc:waterfall-api:1.18-R0.1-SNAPSHOT")
     compileOnly(mvutil("bungee"))
     api(project(":common"))
 }
